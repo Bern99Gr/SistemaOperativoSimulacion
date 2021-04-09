@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define MBR_SIZE 512
-#define numPartitions 4
+#define MBR_SIZE 512 //particiones 512 bytes
+#define numPartitions 4 //cuatro particiones
 
 // Donde empieza y acaba el MBR
 #define MBRstart 0x1BE

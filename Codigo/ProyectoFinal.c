@@ -1,6 +1,9 @@
 //
 // ProyectoFinal.c
 //
+// Creado por: Mauricio, Bernardo y Samantha.
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -9,8 +12,8 @@
 #define numPartitions 4
 
 // Donde empieza y acaba el MBR
-#define MBRstart	0x1BE
-#define MBRend	0x1FE
+#define MBRstart 0x1BE
+#define MBRend 0x1FE
 
 //Tamaño de particion/sector es 512 bytes
 static uint8_t mbr[512]; //El sector debe ser de ese tamaño
@@ -62,7 +65,7 @@ int main(int argc, char **argv){
 
 //Valores CHS
 void valoresCHS(uint32_t Partition) {
-	uint8_t c,h,s;
+	uint8_t c, h, s;
 	c = mbr[Partition];
 	h = mbr[Partition + 0x1];
 	s = mbr[Partition + 0x2];

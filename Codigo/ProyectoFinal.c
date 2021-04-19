@@ -30,7 +30,7 @@ void valoresCHS(uint32_t);
 void valorSector(uint32_t);
 void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sector, uint32_t Partition);
 void cursesInit();
-unsigned long long leerMap(uint8_t Bytes, int Direccion);
+unsigned long long int leerMap(uint8_t Bytes, int Direccion);
 char *mapFile(char *filePath);
 
 /* Variable global para mejor legibilidad */
@@ -43,7 +43,6 @@ int main(int argc, char **argv){
 	int Caracter=0;
 	uint32_t Partition;
 
-	cursesInit();
 	if (argc < 2) {
 		printw("usage: %s (filename)\n", argv[0]);
 		exit(0);
@@ -60,6 +59,7 @@ int main(int argc, char **argv){
     if (map == NULL) {
       exit(EXIT_FAILURE);
     }
+	cursesInit();
 	do{
 		clear();
 		//Checar que tenga MBR ROOT signature
@@ -176,7 +176,7 @@ void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sect
 		printw("Medio fijo  (High Density Flop)\n\n");
 	}
 	printw("Sectores por pista: %u\n\n", (uint16_t)leerMap(2, initParticion+0x18));
-	printw("Número de cabezas: %u\n\n", (uint32_t)leerMap(3, initParticion+0x1A));
+	printw("Número de cabezas: %u\n\n", (uint32_t)leerMap(2, initParticion+0x1A));
 	printw("Sectores ocultos: %u\n\n", (uint64_t)leerMap(4, initParticion+0x1C));
 	printw("Total sectores: %llu\n\n", (unsigned long long int)leerMap(8, initParticion+0x28));
 	printw("Dirección MFT: %llu\t\t\t", (unsigned long long int)leerMap(8, initParticion+0x30));
@@ -212,8 +212,8 @@ char *mapFile(char *filePath) {
   return map;
 }
 
-unsigned long long leerMap(uint8_t Bytes, int Direccion){
-	char arreglo[10], final[10];
+unsigned long long int leerMap(uint8_t Bytes, int Direccion){
+	char arreglo[50], final[50], temp[50];
 	unsigned long long int cosa=0;
 	final[0]=0;
 	/*for(int i=0; i<Bytes; i++){
@@ -221,18 +221,27 @@ unsigned long long leerMap(uint8_t Bytes, int Direccion){
 		printw("\n%x\n", map[Direccion+i]);
 	}
 	printw("\n%x\n", cosa);*/
-
+	for (int i=0; i<50; i++){
+		temp[i]=0;
+		arreglo[i]=0;
+		final[i]=0;
+	}
 	for(int i=0; i<Bytes; i++){
 		arreglo[i]=map[Direccion+i];
 	}
+	//printw("\n%x\n",(unsigned)map[Direccion]);
 	arreglo[Bytes]=0;
+		//printw("\n%u\n", arreglo[0]);
 	for(int i=0; i<Bytes; i++){
-		char temp[10];
-		temp[0]=0;
 		
 		sprintf(temp, "%llu", arreglo[i]);
 		strcat(final, temp);
+		//printw("%lu\n", arreglo[i]);
+
 	}
 	sscanf(final, "%llu", &cosa);
+	/*if(Bytes==8){
+		printw("\n%llx\n", cosa);
+	}*/
 	return cosa;
 }

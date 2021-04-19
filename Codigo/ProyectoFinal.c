@@ -30,7 +30,7 @@ void valoresCHS(uint32_t);
 void valorSector(uint32_t);
 void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sector, uint32_t Partition);
 void cursesInit();
-unsigned int leerMap(uint8_t Bytes, int Direccion);
+unsigned long long leerMap(uint8_t Bytes, int Direccion);
 char *mapFile(char *filePath);
 
 /* Variable global para mejor legibilidad */
@@ -212,7 +212,7 @@ char *mapFile(char *filePath) {
   return map;
 }
 
-unsigned int leerMap(uint8_t Bytes, int Direccion){
+unsigned long long leerMap(uint8_t Bytes, int Direccion){
 	char arreglo[10], final[10];
 	unsigned long long int cosa=0;
 	final[0]=0;

@@ -26,6 +26,26 @@
 //Tamaño de particion/sector es 512 bytes
 static uint8_t mbr[512]; //El sector debe ser de ese tamaño
 
+// Typedefs Tipo de Variables NTFS
+typedef unsigned char BYTE;
+typedef unsigned short int WORD;
+typedef unsigned int DWORD;
+typedef long long LONGLONG;
+
+struct DatosParticion{
+	WORD *BytesPerSector;
+	BYTE *SectorsPerCluster;
+	BYTE *MediaDescriptor;
+	WORD *SectosPerTrack;
+	WORD *NumberOfHeads;
+	DWORD *HiddenSectors;
+	LONGLONG *TotalSectors;
+	LONGLONG *DMFT;
+	LONGLONG *DMMFT;
+	DWORD *ClustersPerFRS;
+	BYTE *ClustersPerIB;
+};
+
 void valoresCHS(uint32_t);
 void valorSector(uint32_t);
 void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sector, uint32_t Partition);
@@ -36,6 +56,7 @@ char *mapFile(char *filePath);
 /* Variable global para mejor legibilidad */
 int fd; // Archivo a leer
 char *map;
+struct DatosParticion DP;
 
 int main(int argc, char **argv){
 	int x=0, y=1, j=0, z=0, Sam=20;
@@ -168,14 +189,45 @@ void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sect
 	uint32_t bytesSector = map[initParticion+0x0B];
 	printw("\nInformación de Disco\n");
 	printw("ID : %c%c%c%c\n\n", map[initParticion+0x03], map[initParticion+0x04], map[initParticion+0x05], map[initParticion+0x06]);
-	printw("Tamaño sector (bytes): %u\n\n", leerMap(2, initParticion+0x0B));
-	printw("Número de sectores por cluster: %u\n\n", leerMap(1, initParticion+0x0D));
-	if((uint8_t)leerMap(1, initParticion+0x15)==248){
+
+	DP.BytesPerSector=(WORD*)&map[initParticion+0x0B];
+	printw("Tamaño sector (bytes): %ld\n\n", *DP.BytesPerSector);
+
+	DP.SectorsPerCluster=(BYTE*)&map[initParticion+0x0D];
+	printw("Número de sectores por cluster: %ld\n\n", *DP.SectorsPerCluster);
+
+	DP.MediaDescriptor=(BYTE*)&map[initParticion+0x15];
+	if(*DP.MediaDescriptor==248){
 		printw("Medio fijo  (HD)\n\n");
 	}else{
 		printw("Medio fijo  (High Density Flop)\n\n");
 	}
-	printw("Sectores por pista: %u\n\n", (uint16_t)leerMap(2, initParticion+0x18));
+
+	DP.SectosPerTrack=(WORD*)&map[initParticion+0x18];
+	printw("Sectores por pista: %ld\n\n", *DP.SectosPerTrack);
+
+
+	DP.NumberOfHeads = (WORD*) &map[initParticion+0x1a];
+	printw("Numero de cabezas %d\n\n", *DP.NumberOfHeads);
+
+	DP.HiddenSectors = (DWORD *) &map[initParticion+0x1c];
+	printw("Sectores ocultos: %d\n\n", *DP.HiddenSectors);
+
+	DP.TotalSectors = (LONGLONG*) &map[initParticion+0x28];
+	printw("Total de sectores: %ld\n\n", *DP.TotalSectors);
+
+	DP.DMFT = (LONGLONG*) &map[initParticion+0x30];
+	printw("Direccion MFT: %ld\n\n", DP.DMFT);
+
+	DP.DMMFT = (LONGLONG*) &map[initParticion+0x38];
+	printw("Direccion espejo MFT: %ld\n\n", *DP.DMMFT);
+
+	DP.ClustersPerFRS = (DWORD*) &map[initParticion+0x40];
+	printw("Clusters per file record segment: %d\n\n", *DP.ClustersPerFRS);
+
+	DP.ClustersPerIB = (BYTE*) &map[initParticion+0x44];
+	printw("Clusters per index buffer: %d\n\n", *DP.ClustersPerIB);
+	/*
 	printw("Número de cabezas: %u\n\n", (uint32_t)leerMap(2, initParticion+0x1A));
 	printw("Sectores ocultos: %u\n\n", (uint64_t)leerMap(4, initParticion+0x1C));
 	printw("Total sectores: %llu\n\n", (unsigned long long int)leerMap(8, initParticion+0x28));
@@ -183,7 +235,7 @@ void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sect
 	printw("Dirección espejo MFT: %llu\n\n", (unsigned long long int)leerMap(8, initParticion+0x38));
 	printw("Clusters per File Record Segment: %u\t\t", (uint8_t)leerMap(1, initParticion+0x40));
 	printw("Clusters per Index Buffer: %u\n\n", (uint8_t)leerMap(1, initParticion+0x44));
-
+	*/
 
 	getch();
 	refresh();

@@ -46,9 +46,65 @@ struct DatosParticion{
 	BYTE *ClustersPerIB;
 };
 
+struct NTFS_MFT_FILE
+ {
+   	char		szSignature[4];		// Signature "FILE"
+   	WORD		wFixupOffset;		// offset to fixup pattern
+   	WORD		wFixupSize;			// Size of fixup-list +1
+   	LONGLONG	n64LogSeqNumber;	// log file seq number
+   	WORD		wSequence;			// sequence nr in MFT
+   	WORD		wHardLinks;			// Hard-link count
+   	WORD		wAttribOffset;		// Offset to seq of Attributes
+   	WORD		wFlags;				// 0x01 = NonRes; 0x02 = Dir
+   	DWORD		dwRecLength;		// Real size of the record
+   	DWORD		dwAllLength;		// Allocated size of the record
+  	LONGLONG	n64BaseMftRec;		// ptr to base MFT rec or 0
+   	WORD		wNextAttrID;		// Minimum Identificator +1
+   	WORD		wFixupPattern;		// Current fixup pattern
+   	DWORD		dwMFTRecNumber;		// Number of this MFT Record
+   								// followed by resident and∫  								// part of non-res attributes
+ };
+
+ typedef struct	// if resident then + RESIDENT
+   {					//  else + NONRESIDENT
+   	DWORD	dwType;
+   	DWORD	dwFullLength;
+   	BYTE	uchNonResFlag;
+   	BYTE	uchNameLength;
+   	WORD	wNameOffset;
+   	WORD	wFlags;
+   	WORD	wID;
+   
+   	union ATTR
+   	{
+   		struct RESIDENT
+   		{
+   			DWORD	dwLength;
+   			WORD	wAttrOffset;
+   			BYTE	uchIndexedTag;
+   			BYTE	uchPadding;
+   		} Resident;
+   
+   		struct NONRESIDENT
+   		{
+   			LONGLONG	n64StartVCN;
+   			LONGLONG	n64EndVCN;
+   			WORD		wDatarunOffset;
+   			WORD		wCompressionSize; // compression unit size
+   			BYTE		uchPadding[4];
+   			LONGLONG	n64AllocSize;
+   			LONGLONG	n64RealSize;
+   			LONGLONG	n64StreamSize;
+   			// data runs...
+   		}NonResident;
+   	}Attr;
+ } NTFS_ATTRIBUTE;
+
 void valoresCHS(uint32_t);
 void valorSector(uint32_t);
 void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sector, uint32_t Partition);
+void verArchivos(int initParticion);
+
 void cursesInit();
 unsigned long long int leerMap(uint8_t Bytes, int Direccion);
 char *mapFile(char *filePath);
@@ -57,6 +113,8 @@ char *mapFile(char *filePath);
 int fd; // Archivo a leer
 char *map;
 struct DatosParticion DP;
+struct Attr *ntfsAttr;
+struct NTFS_MFT_FILE ntfsMFT;
 
 int main(int argc, char **argv){
 	int x=0, y=1, j=0, z=0, Sam=20;
@@ -124,6 +182,7 @@ int main(int argc, char **argv){
 				winstr(stdscr, temp);
 				sscanf(temp, "\t\t%u \t%u \t%u\t%u \n", &c, &h, &s, &sector);
 				verParticion(c, h, s, sector, Partition);
+				verArchivos(sector*512);
 
 			break;
 		}
@@ -217,7 +276,7 @@ void verParticion(unsigned int c,unsigned int h,unsigned int s,unsigned int sect
 	printw("Total de sectores: %ld\n\n", *DP.TotalSectors);
 
 	DP.DMFT = (LONGLONG*) &map[initParticion+0x30];
-	printw("Direccion MFT: %ld\n\n", DP.DMFT);
+	printw("Direccion MFT: %ld\n\n", *DP.DMFT);
 
 	DP.DMMFT = (LONGLONG*) &map[initParticion+0x38];
 	printw("Direccion espejo MFT: %ld\n\n", *DP.DMMFT);
@@ -296,4 +355,29 @@ unsigned long long int leerMap(uint8_t Bytes, int Direccion){
 		printw("\n%llx\n", cosa);
 	}*/
 	return cosa;
+}
+
+void verArchivos(int initParticion){
+	int Caracter = 0, i=0;
+	clear();
+	printw("\n\nNombre\tTipo\tResidente\tTamaño\n\n");
+
+	do
+	{
+		memcpy((void*)&ntfsAttr,&m_pMFTRecord[0x100000+0x4000],sizeof(NTFS_ATTRIBUTE));
+		switch(ntfsAttr.dwType){
+
+		}
+
+		i++;
+	} while (ntfsAttr.dwFullLength);
+	
+	Caracter = getch();
+	/*do{
+		clear();
+		printw("\n\nNombre\tTipo\tResidente\tTamaño\n\n");
+		printw("%c\n", map[initParticion, *DP.DMFT+15]);
+
+		Caracter = getch();
+	}while(Caracter!='q');*/∫
 }

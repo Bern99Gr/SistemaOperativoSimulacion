@@ -361,11 +361,35 @@ void verArchivos(int initParticion){
 	int Caracter = 0, i=0;
 	clear();
 	printw("\n\nNombre\tTipo\tResidente\tTamaño\n\n");
-
+	NTFS_ATTRIBUTE Attr; 
+	ATTR_STANDARD AttrStd; 
+	ATTR_FILENAME AttrFN; 
+	char nomsimple[256]; 
+	char *dir = &map[0];
+	int k, i, j, m;
+	m = k = i = j = 0;
+	
 	do
 	{
-		memcpy((void*)&ntfsAttr,&m_pMFTRecord[0x100000+0x4000],sizeof(NTFS_ATTRIBUTE));
+		memcpy((void*)&ntfsAttr,&dir[initParticion+0x4000],sizeof(NTFS_ATTRIBUTE));
 		switch(ntfsAttr.dwType){
+			case 0:	
+			break;
+			case 0x10:
+			memcpy((void*)&AttrStd, &dir[j+Attr.Attr.Resident.wAttrOffset //Falta
+			break;
+			case 0x30:
+			//FILE_NAME 
+			memcpy((void *)&AttrFN,&dir[j+Attr.Attr.Resident.wAttrOffs //Falta
+			for(int k=0; k < AttrFN.chFildNameLength; k++) { 
+			nomsimple[k] = (char) AttrFN.wFilename[k]; 
+			}
+			nomsimple[AttrFN.chFileNameLength] = 0;
+			memcpy(ar[k].nombre, nomsimple, AttrFN.chFileNameLength);
+			ar[k].tipo = AttrFN.dwFlags;
+			ar[k].creacion = AttrFN.n64Create;
+			break;
+			
 
 		}
 
